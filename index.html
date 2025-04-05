@@ -148,5 +148,38 @@
       }, 1000);
     }
   </script>
+  <script type="module">
+  // Import Firebase core
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+  // Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyA5YUhpgFScfmaPw9EEiXwwNl3j-n0Fz5Q",
+    authDomain: "cyber-auth-e504c.firebaseapp.com",
+    projectId: "cyber-auth-e504c",
+    storageBucket: "cyber-auth-e504c.appspot.com",
+    messagingSenderId: "125074118764",
+    appId: "1:125074118764:web:a5656962cbf3990f56e049",
+    measurementId: "G-WNCQE8J1BL"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // Example: getting a user request doc
+  const docRef = doc(db, "requests", "USER_ID_HERE");
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+    console.log("Document data:", docSnap.data());
+  } else {
+    console.log("No such document!");
+  }
+</script>
+
 </body>
 </html>
