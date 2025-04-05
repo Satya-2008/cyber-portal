@@ -87,7 +87,62 @@
     };
 
     loadRequests();
-    
+  </script>
+  <script>
+  async function register() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (!email || !password) {
+      alert("Email and password are required.");
+      return;
+    }
+
+    try {
+      const userCred = await createUserWithEmailAndPassword(auth, email, password);
+
+      // Store request in Firestore for admin approval
+      await setDoc(doc(db, "requests", userCred.user.uid), {
+        email: email,
+        approved: false,
+        createdAt: new Date()
+      });
+
+      alert("Registered successfully. Wait for owner approval.");
+    } catch (error) {
+      alert("Error: " + error.message);
+    }
+  }
+
+  async function login() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (!email || !password) {
+      alert("Email and password are required.");
+      return;
+    }
+
+    try {
+      const userCred = await signInWithEmailAndPassword(auth, email, password);
+
+      const docRef = doc(db, "requests", userCred.user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists() && docSnap.data().approved === true) {
+        alert("Access granted. Enjoy internet!");
+        document.getElementById('authForm').style.display = 'none';
+        document.getElementById('timer').style.display = 'block';
+        startTimer(60); // 60 minutes
+      } else {
+        alert("Waiting for owner's approval.");
+      }
+    } catch (error) {
+      alert("Login error: " + error.message);
+    }
+  }
+</script>
+
   
   <!-- Firebase SDKs -->
 <script type="module">
@@ -116,6 +171,14 @@
   window.setDoc = setDoc;
   window.doc = doc;
 </script>
+  <div class="form" id="authForm">
+  <h2>Login or Register</h2>
+  <input type="email" id="email" placeholder="Email" required />
+  <input type="password" id="password" placeholder="Password" required />
+  <button onclick="register()">Register</button>
+  <button onclick="login()">Login</button>
+</div>
+
 
 </body>
 </html>
