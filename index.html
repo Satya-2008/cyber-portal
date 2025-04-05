@@ -2,183 +2,151 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Admin Access Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cyber Café Login</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #111;
-      color: #fff;
-      padding: 20px;
+      font-family: sans-serif;
+      background: #121212;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
     }
 
-    h1 {
-      color: #00e676;
+    .form {
+      background: #1e1e1e;
+      padding: 2em;
+      border-radius: 10px;
+      box-shadow: 0 0 20px #0f0;
+      text-align: center;
     }
 
-    .request {
-      background: #1c1c1c;
-      padding: 15px;
-      margin-bottom: 10px;
-      border-radius: 8px;
+    input {
+      display: block;
+      margin: 1em auto;
+      padding: 0.5em;
+      width: 90%;
+      background: #2a2a2a;
+      color: white;
+      border: none;
+      border-radius: 5px;
     }
 
     button {
-      padding: 8px 12px;
-      background-color: #00c853;
+      padding: 0.7em 1.5em;
+      background: #00c853;
       border: none;
-      border-radius: 4px;
-      color: #fff;
+      border-radius: 5px;
       cursor: pointer;
+      font-weight: bold;
+      margin-top: 1em;
     }
 
-    button:hover {
-      background-color: #00b341;
+    #timer {
+      display: none;
+      font-size: 2em;
+      margin-top: 1em;
     }
   </style>
 </head>
 <body>
+  <div class="form">
+    <h2>Login or Register</h2>
+    <input type="email" id="name" placeholder="Enter your Email" />
+    <input type="password" id="phone" placeholder="Enter Password (6+ characters)" />
+    <button id="loginBtn">Start Session</button>
+  </div>
 
-  <h1>👑 Admin Approval Panel</h1>
-  <div id="requestsContainer"></div>
+  <div id="timer">
+    <p>🕒 Session Time Left:</p>
+    <h1 id="time">60:00</h1>
+  </div>
 
-  <!-- Firebase SDKs -->
   <script type="module">
-    // Firebase import
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getFirestore, collection, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+    import {
+      getFirestore, collection, setDoc, doc, getDoc
+    } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+    import {
+      getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA5YUhpgFScfmaPw9EEiXwwNl3j-n0Fz5Q",
       authDomain: "cyber-auth-e504c.firebaseapp.com",
       projectId: "cyber-auth-e504c",
-      storageBucket: "cyber-auth-e504c.appspot.com",
+      storageBucket: "cyber-auth-e504c.firebasestorage.app",
       messagingSenderId: "125074118764",
       appId: "1:125074118764:web:a5656962cbf3990f56e049",
       measurementId: "G-WNCQE8J1BL"
     };
 
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
     const db = getFirestore(app);
 
-    const container = document.getElementById('requestsContainer');
+    const loginBtn = document.getElementById("loginBtn");
 
-    async function loadRequests() {
-      const snapshot = await getDocs(collection(db, "requests"));
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        if (!data.approved) {
-          const div = document.createElement('div');
-          div.className = 'request';
-          div.innerHTML = `
-            <p><strong>Name:</strong> ${data.name}</p>
-            <p><strong>Phone:</strong> ${data.phone}</p>
-            <button onclick="approve('${docSnap.id}')">Approve</button>
-          `;
-          container.appendChild(div);
-        }
-      });
-    }
+    loginBtn.addEventListener("click", async () => {
+      const email = document.getElementById("name").value.trim();
+      const password = document.getElementById("phone").value.trim();
 
-    window.approve = async function (id) {
-      const ref = doc(db, "requests", id);
-      await updateDoc(ref, { approved: true });
-      alert("Access Approved!");
-      location.reload();
-    };
-
-    loadRequests();
-  </script>
-  <script>
-  async function register() {
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value.trim();
-
-    if (!email || !password) {
-      alert("Email and password are required.");
-      return;
-    }
-
-    try {
-      const userCred = await createUserWithEmailAndPassword(auth, email, password);
-
-      // Store request in Firestore for admin approval
-      await setDoc(doc(db, "requests", userCred.user.uid), {
-        email: email,
-        approved: false,
-        createdAt: new Date()
-      });
-
-      alert("Registered successfully. Wait for owner approval.");
-    } catch (error) {
-      alert("Error: " + error.message);
-    }
-  }
-
-  async function login() {
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value.trim();
-
-    if (!email || !password) {
-      alert("Email and password are required.");
-      return;
-    }
-
-    try {
-      const userCred = await signInWithEmailAndPassword(auth, email, password);
-
-      const docRef = doc(db, "requests", userCred.user.uid);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists() && docSnap.data().approved === true) {
-        alert("Access granted. Enjoy internet!");
-        document.getElementById('authForm').style.display = 'none';
-        document.getElementById('timer').style.display = 'block';
-        startTimer(60); // 60 minutes
-      } else {
-        alert("Waiting for owner's approval.");
+      if (!email || !password || password.length < 6) {
+        alert("Enter valid email and password (6+ characters).");
+        return;
       }
-    } catch (error) {
-      alert("Login error: " + error.message);
+
+      try {
+        const userCred = await signInWithEmailAndPassword(auth, email, password);
+        const userId = userCred.user.uid;
+        const docRef = doc(db, "requests", userId);
+        const snapshot = await getDoc(docRef);
+
+        if (!snapshot.exists()) {
+          alert("Request not found. Contact admin.");
+          return;
+        }
+
+        if (snapshot.data().approved) {
+          alert("✅ Access Granted!");
+          document.querySelector(".form").style.display = "none";
+          document.getElementById("timer").style.display = "block";
+          startTimer(60); // 60 minutes
+        } else {
+          alert("⛔ Not approved yet. Wait for admin approval.");
+        }
+      } catch (err) {
+        if (err.code === "auth/user-not-found") {
+          const userCred = await createUserWithEmailAndPassword(auth, email, password);
+          await setDoc(doc(db, "requests", userCred.user.uid), {
+            email,
+            approved: false,
+            requestedAt: new Date()
+          });
+          alert("Request sent to admin. Please wait for approval.");
+        } else {
+          alert("Login failed: " + err.message);
+        }
+      }
+    });
+
+    function startTimer(duration) {
+      let timer = duration * 60;
+      const display = document.getElementById("time");
+      const interval = setInterval(() => {
+        const minutes = Math.floor(timer / 60);
+        const seconds = timer % 60;
+        display.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        if (--timer < 0) {
+          clearInterval(interval);
+          alert("⏳ Time's up! Please pay again.");
+          location.reload();
+        }
+      }, 1000);
     }
-  }
-</script>
-
-  
-  <!-- Firebase SDKs -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyA5YUhpgFScfmaPw9EEiXwwNl3j-n0Fz5Q",
-    authDomain: "cyber-auth-e504c.firebaseapp.com",
-    projectId: "cyber-auth-e504c",
-    storageBucket: "cyber-auth-e504c.firebasestorage.app",
-    messagingSenderId: "125074118764",
-    appId: "1:125074118764:web:a5656962cbf3990f56e049",
-    measurementId: "G-WNCQE8J1BL"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-
-  window.auth = auth;
-  window.db = db;
-  window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
-  window.signInWithEmailAndPassword = signInWithEmailAndPassword;
-  window.setDoc = setDoc;
-  window.doc = doc;
-</script>
-  <div class="form" id="authForm">
-  <h2>Login or Register</h2>
-  <input type="email" id="email" placeholder="Email" required />
-  <input type="password" id="password" placeholder="Password" required />
-  <button onclick="register()">Register</button>
-  <button onclick="login()">Login</button>
-</div>
-
-
+  </script>
 </body>
 </html>
