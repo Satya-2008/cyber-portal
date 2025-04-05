@@ -179,7 +179,44 @@
   } else {
     console.log("No such document!");
   }
+    // Reference to Firestore
+const requestsCollection = "requests";
+
+// Get form and button
+const nameInput = document.getElementById("name");
+const phoneInput = document.getElementById("phone");
+const loginBtn = document.getElementById("loginBtn");
+
+loginBtn.addEventListener("click", async () => {
+  const name = nameInput.value.trim();
+  const phone = phoneInput.value.trim();
+
+  if (!name || phone.length < 10) {
+    alert("Please enter valid details.");
+    return;
+  }
+
+  const userId = `${phone}_${Date.now()}`;
+  const requestData = {
+    name,
+    phone,
+    status: "pending",
+    requestedAt: new Date().toISOString()
+  };
+
+  try {
+    const requestRef = doc(db, requestsCollection, userId);
+    await setDoc(requestRef, requestData);
+    alert("Request sent! Please wait for the owner to approve.");
+  } catch (error) {
+    console.error("Error sending request:", error);
+    alert("Error! Please try again.");
+  }
+});
+
 </script>
+  
+  
 
 </body>
 </html>
