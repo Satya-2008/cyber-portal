@@ -87,6 +87,35 @@
     };
 
     loadRequests();
-  </script>
+    
+  
+  <!-- Firebase SDKs -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA5YUhpgFScfmaPw9EEiXwwNl3j-n0Fz5Q",
+    authDomain: "cyber-auth-e504c.firebaseapp.com",
+    projectId: "cyber-auth-e504c",
+    storageBucket: "cyber-auth-e504c.firebasestorage.app",
+    messagingSenderId: "125074118764",
+    appId: "1:125074118764:web:a5656962cbf3990f56e049",
+    measurementId: "G-WNCQE8J1BL"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  window.auth = auth;
+  window.db = db;
+  window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+  window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+  window.setDoc = setDoc;
+  window.doc = doc;
+</script>
+
 </body>
 </html>
